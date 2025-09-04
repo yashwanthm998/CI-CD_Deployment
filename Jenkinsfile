@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "todo-app"
         IMAGE_TAG = "v1.0.${BUILD_NUMBER}" 
         DOCKERHUB_CREDENTIALS = credentials('docker123')
-        DOCKER_HUB_REPO = "yashwanthm194/todo-app"
+        DOCKER_HUB_REPO = "yashwanthm998/todo-app"
     }
 
     stages {
