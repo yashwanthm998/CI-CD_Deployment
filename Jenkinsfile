@@ -6,6 +6,8 @@ pipeline {
         IMAGE_TAG = "v1.0.${BUILD_NUMBER}" 
         DOCKERHUB_CREDENTIALS = credentials('docker123')
         DOCKER_HUB_REPO = "yashwanthm998/todo-app"
+        K8S_TOKEN = credentials('k8s-cred')
+        K8S_SERVER = "https://35.239.231.236"
     }
 
     stages {
@@ -50,7 +52,16 @@ pipeline {
         }
         stage('Deployment to kubernetes'){
             steps {
-                script {}
+                script {
+                    sh """
+                        kubectl config set-cluster my-cluster --server=$K8S_SERVER --insecure-skip-tls-verify=true
+                        kubectl config set-credentials jenkins --token=$K8S_TOKEN
+                        kubectl config set-context my-context --cluster=my-cluster --user=jenkins
+                        kubectl config use-context my-context
+
+                        kubectl apply -f dep
+                    """
+                }
             }
         }
     }
