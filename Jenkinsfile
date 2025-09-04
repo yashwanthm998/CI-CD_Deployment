@@ -48,6 +48,11 @@ pipeline {
                 }
             }
         }
+        stage('Deployment to kubernetes'){
+            steps {
+                script {}
+            }
+        }
     }
 
     post {
