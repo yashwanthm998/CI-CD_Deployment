@@ -52,19 +52,21 @@ pipeline {
         }
         stage('Deployment to kubernetes'){
             steps {
-                script {
-                    sh """
-                        kubectl config set-cluster my-cluster --server=$K8S_SERVER --insecure-skip-tls-verify=true
-                        kubectl config set-credentials jenkins --token=$K8S_TOKEN
-                        kubectl config set-context my-context --cluster=my-cluster --user=jenkins
-                        kubectl config use-context my-context
+                withCredentials([string(credentialsId: 'k8s-cred', variable: 'K8S_TOKEN')]) {
+                    script {
+                        sh """
+                            kubectl config set-cluster my-cluster --server=$K8S_SERVER --insecure-skip-tls-verify=true
+                            kubectl config set-credentials jenkins --token=$K8S_TOKEN
+                            kubectl config set-context my-context --cluster=my-cluster --user=jenkins
+                            kubectl config use-context my-context
 
-                        kubectl apply --validate=false -f deployment.yaml
-
-                    """
+                            kubectl apply -f deployment.yaml --validate=false
+                        """
+                    }
                 }
             }
         }
+
     }
 
     post {
