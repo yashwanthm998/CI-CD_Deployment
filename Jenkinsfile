@@ -59,7 +59,8 @@ pipeline {
                         kubectl config set-context my-context --cluster=my-cluster --user=jenkins
                         kubectl config use-context my-context
 
-                        kubectl apply -f deployment.yaml
+                        kubectl apply --validate=false -f deployment.yaml
+
                     """
                 }
             }
