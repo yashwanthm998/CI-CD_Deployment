@@ -36,7 +36,7 @@ pipeline {
                 }
             }
         }
-
+ 
         stage('Tag & Push Docker Image') {
             steps {
                 script {
@@ -44,12 +44,13 @@ pipeline {
                     sh """
                         docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:${IMAGE_TAG}
                         docker push ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:latest
+                        docker push ${DOCKER_HUB_REPO}:latest
                     """
                 }
             }
         }
-
-        stage('Deploy to Kubernetes') {
+        stage('Deployment to kubernetes'){
             steps {
                 withCredentials([string(credentialsId: 'k8s-cred', variable: 'K8S_TOKEN')]) {
                     script {
@@ -59,6 +60,8 @@ pipeline {
                             kubectl config set-context my-context --cluster=my-cluster --user=jenkins
                             kubectl config use-context my-context
 
+                            kubectl apply -f deployment.yaml --validate=false
+                            
                             # Update deployment with the new image
                             kubectl set image deployment/todo-deployment todo-container=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
                             
@@ -69,6 +72,7 @@ pipeline {
                 }
             }
         }
+
     }
 
     post {
