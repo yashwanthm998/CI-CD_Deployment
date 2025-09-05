@@ -64,6 +64,8 @@ pipeline {
 
                             # Update deployment with the new image
                             kubectl set image deployment/todo-app todo-app=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
+
+                            kubectl annotate deployment todo-app buildNumber=${BUILD_NUMBER} --overwrite
                             
                             # Wait for rollout to complete
                             kubectl rollout status deployment/todo-app
