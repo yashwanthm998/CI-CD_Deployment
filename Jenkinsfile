@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('* * * * *') 
+    }
+
     environment {
         IMAGE_NAME = "todo-app"
         IMAGE_TAG = "v1.0.${BUILD_NUMBER}" 
