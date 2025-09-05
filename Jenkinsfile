@@ -61,12 +61,12 @@ pipeline {
                             kubectl config use-context my-context
 
                             kubectl apply -f deployment.yaml --validate=false
-                            
+
                             # Update deployment with the new image
-                            kubectl set image deployment/todo-deployment todo-container=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
+                            kubectl set image deployment/todo-app todo-container=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
                             
                             # Wait for rollout to complete
-                            kubectl rollout status deployment/todo-deployment
+                            kubectl rollout status deployment/todo-app
                         """
                     }
                 }
