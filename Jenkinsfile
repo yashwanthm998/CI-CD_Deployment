@@ -11,7 +11,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('docker123')
         DOCKER_HUB_REPO = "yashwanthm998/todo-app"
         K8S_TOKEN = credentials('k8s-cred')
-        K8S_SERVER = "https://35.239.231.236"
+        K8S_SERVER = "https://34.46.170.140"
     }
 
     stages {
