@@ -1,31 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo-app
+  name: my-app
+  labels:
+    app: my-app
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
-      app: todo-app
+      app: my-app
   template:
     metadata:
       labels:
-        app: todo-app
+        app: my-app
     spec:
       containers:
-      - name: todo-app
+      - name: my-app-container
         image: yashwanthm998/todo-app:latest
         ports:
         - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: todo-app-service
-spec:
-  type: LoadBalancer
-  selector:
-    app: todo-app
-  ports:
-  - port: 80
-    targetPort: 80
