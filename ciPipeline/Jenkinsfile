@@ -1,0 +1,8 @@
+@Library('ci-cd-library') _
+ 
+frontend(
+    dockerCreds : 'docker123',
+    dockerRepo  : 'yashwanthm998/todo-app',
+    imageName: 'todo-app'
+    imageTag: '1.1.1'
+)
