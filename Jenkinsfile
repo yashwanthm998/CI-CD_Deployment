@@ -25,7 +25,10 @@ pipeline {
 
         stage('Build Docker Image') {
             agent {
-                label 'docker-agent'  // Your Docker-enabled agent
+                docker {
+                    image 'docker:24-dind'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
             }
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
@@ -34,7 +37,10 @@ pipeline {
 
         stage('Login to DockerHub') {
             agent {
-                label 'docker-agent'
+                docker {
+                    image 'docker:24-dind'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
             }
             steps {
                 sh """
@@ -45,7 +51,10 @@ pipeline {
 
         stage('Tag & Push Docker Image') {
             agent {
-                label 'docker-agent'
+                docker {
+                    image 'docker:24-dind'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
             }
             steps {
                 sh """
@@ -62,16 +71,16 @@ pipeline {
                 kubernetes {
                     label 'kubernetes'
                     yaml """
-                        apiVersion: v1
-                        kind: Pod
-                        spec:
-                        containers:
-                        - name: kubectl
-                            image: bitnami/kubectl:latest
-                            command:
-                            - cat
-                            tty: true
-                        """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
+"""
                 }
             }
             steps {
