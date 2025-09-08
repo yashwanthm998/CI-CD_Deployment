@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none 
 
     triggers {
         pollSCM('* * * * *') 
@@ -16,6 +16,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent { label 'docker-agent' }   // runs on docker-agent
             steps {
                 echo("Pulling code from GitHub repository")
                 checkout scm
@@ -23,61 +24,52 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            agent { label 'docker-agent' }   // build with docker
             steps {
-                script {
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                }
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Login to DockerHub') {
+            agent { label 'docker-agent' }
             steps {
-                script {
-                    echo " Logging into Docker Hub..."
-                    sh """
-                        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                    """
-                }
+                echo "Logging into Docker Hub..."
+                sh """
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                """
             }
         }
- 
+
         stage('Tag & Push Docker Image') {
+            agent { label 'docker-agent' }
             steps {
-                script {
-                    echo "Pushing Docker image to DockerHub..."
-                    sh """
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:${IMAGE_TAG}
-                        docker push ${DOCKER_HUB_REPO}:${IMAGE_TAG}
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:latest
-                        docker push ${DOCKER_HUB_REPO}:latest
-                    """
-                }
+                echo "Pushing Docker image to DockerHub..."
+                sh """
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                    docker push ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:latest
+                    docker push ${DOCKER_HUB_REPO}:latest
+                """
             }
         }
-        stage('Deployment to kubernetes'){
+
+        stage('Deployment to Kubernetes') {
+            agent { label 'kubernetes-agent' }  // deploy on k8s-agent
             steps {
                 withCredentials([string(credentialsId: 'k8s-cred', variable: 'K8S_TOKEN')]) {
-                    script {
-                        sh """
-                            kubectl config set-cluster my-cluster --server=$K8S_SERVER --insecure-skip-tls-verify=true
-                            kubectl config set-credentials jenkins --token=$K8S_TOKEN
-                            kubectl config set-context my-context --cluster=my-cluster --user=jenkins
-                            kubectl config use-context my-context
+                    sh """
+                        kubectl config set-cluster my-cluster --server=$K8S_SERVER --insecure-skip-tls-verify=true
+                        kubectl config set-credentials jenkins --token=$K8S_TOKEN
+                        kubectl config set-context my-context --cluster=my-cluster --user=jenkins
+                        kubectl config use-context my-context
 
-                            kubectl apply -f deployment.yaml --validate=false
-
-                            # Update deployment with the new image
-                            kubectl set image deployment/todo-app todo-app=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
-
-                            
-                            # Wait for rollout to complete
-                            kubectl rollout status deployment/todo-app
-                        """
-                    }
+                        kubectl apply -f deployment.yaml --validate=false
+                        kubectl set image deployment/todo-app todo-app=${DOCKER_HUB_REPO}:${IMAGE_TAG} --record
+                        kubectl rollout status deployment/todo-app
+                    """
                 }
             }
         }
-
     }
 
     post {
