@@ -1,13 +1,13 @@
 pipeline {
-    agent none 
+    agent none  // No default agent; we specify per stage
 
     triggers {
-        pollSCM('* * * * *') 
+        pollSCM('* * * * *')
     }
 
     environment {
         IMAGE_NAME = "todo-app"
-        IMAGE_TAG = "v1.0.${BUILD_NUMBER}" 
+        IMAGE_TAG = "v1.0.${BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS = credentials('docker123')
         DOCKER_HUB_REPO = "yashwanthm998/todo-app"
         K8S_TOKEN = credentials('k8s-cred')
@@ -16,7 +16,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            agent { label 'docker-agent' }   // runs on docker-agent
+            agent any  // Can be your Jenkins master
             steps {
                 echo("Pulling code from GitHub repository")
                 checkout scm
@@ -24,16 +24,19 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            agent { label 'docker-agent' }   // build with docker
+            agent {
+                label 'docker-agent'  // Your Docker-enabled agent
+            }
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Login to DockerHub') {
-            agent { label 'docker-agent' }
+            agent {
+                label 'docker-agent'
+            }
             steps {
-                echo "Logging into Docker Hub..."
                 sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
                 """
@@ -41,9 +44,10 @@ pipeline {
         }
 
         stage('Tag & Push Docker Image') {
-            agent { label 'docker-agent' }
+            agent {
+                label 'docker-agent'
+            }
             steps {
-                echo "Pushing Docker image to DockerHub..."
                 sh """
                     docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:${IMAGE_TAG}
                     docker push ${DOCKER_HUB_REPO}:${IMAGE_TAG}
@@ -53,8 +57,23 @@ pipeline {
             }
         }
 
-        stage('Deployment to Kubernetes') {
-            agent { label 'kubernetes-agent' }  // deploy on k8s-agent
+        stage('Deploy to Kubernetes') {
+            agent {
+                kubernetes {
+                    label 'kubernetes'
+                    yaml """
+                        apiVersion: v1
+                        kind: Pod
+                        spec:
+                        containers:
+                        - name: kubectl
+                            image: bitnami/kubectl:latest
+                            command:
+                            - cat
+                            tty: true
+                        """
+                }
+            }
             steps {
                 withCredentials([string(credentialsId: 'k8s-cred', variable: 'K8S_TOKEN')]) {
                     sh """
