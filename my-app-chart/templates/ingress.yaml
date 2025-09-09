@@ -7,14 +7,16 @@ metadata:
     {{- include "my-app.labels" . | nindent 4 }}
 spec:
   rules:
-    - host: {{ .Values.ingress.hosts[0].host }}
+  {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ include "my-app.fullname" . }}
+                name: {{ include "my-app.fullname" $ }}
                 port:
-                  number: {{ .Values.service.port }}
+                  number: {{ $.Values.service.port }}
+  {{- end }}
 {{- end }}
