@@ -4,23 +4,17 @@ kind: Ingress
 metadata:
   name: {{ include "my-app.fullname" . }}
   labels:
-    app: {{ include "my-app.name" . }}
-  annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    {{- include "my-app.labels" . | nindent 4 }}
 spec:
   rules:
-  {{- range .Values.ingress.hosts }}
-    - host: {{ .host }}
+    - host: {{ .Values.ingress.hosts[0].host }}
       http:
         paths:
-        {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
+          - path: /
+            pathType: Prefix
             backend:
               service:
-                name: {{ include "my-app.fullname" $ }}
+                name: {{ include "my-app.fullname" . }}
                 port:
-                  number: {{ $.Values.service.port }}
-        {{- end }}
-  {{- end }}
+                  number: {{ .Values.service.port }}
 {{- end }}
