@@ -4,10 +4,10 @@
     box-sizing: border-box;
 }
 :root {
-    --background: #0b0b13eb;
+    --background: #f89d2eeb;
     --secondaryBackground: #171c48;
-    --text:#27f415;
-    --purple:#340886;
+    --text:#472ddd;
+    --purple:#dcbcc3;
     --teal:#27d6d8;
 }
 
