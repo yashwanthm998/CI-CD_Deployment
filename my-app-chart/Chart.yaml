@@ -1,5 +1,5 @@
 apiVersion: v2
-name: my-app
+name: my-app-container
 description: A Helm chart for deploying My App
 type: application
 version: 0.1.0
