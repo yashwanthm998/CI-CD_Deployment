@@ -3,16 +3,17 @@ kind: Deployment
 metadata:
   name: {{ include "my-app.fullname" . }}
   labels:
-    app: {{ include "my-app.name" . }}
+    {{- include "my-app.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "my-app.name" . }}
+      app.kubernetes.io/name: {{ include "my-app.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "my-app.name" . }}
+        {{- include "my-app.labels" . | nindent 8 }}
     spec:
       containers:
       - name: {{ .Chart.Name }}
