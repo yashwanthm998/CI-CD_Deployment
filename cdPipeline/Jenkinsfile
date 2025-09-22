@@ -5,5 +5,5 @@ cdPipeline(
     appVersion : '1.1.6',
     gitCommit  : 'abc1234',
     k8sCreds   : 'k8s-cred',
-    k8sServer  : 'https://34.68.221.203'
+    k8sServer  : 'https://34.55.109.117'
 )
