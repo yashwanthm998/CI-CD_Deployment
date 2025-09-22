@@ -4,5 +4,5 @@ frontend(
     dockerCreds : 'docker123',
     dockerRepo  : 'yashwanthm998/todo-app',
     imageName: 'todo-app',
-    imageTag: '1.1.6'
+    imageTag: '1.1.7'
 )
