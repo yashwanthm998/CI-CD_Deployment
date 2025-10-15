@@ -2,7 +2,7 @@
 
 cdPipeline(
     dockerRepo : 'yashwanthm998/todo-app',
-    appVersion : '1.1.7',
+    appVersion : '1.1.8',
     gitCommit  : 'abc1234',
     k8sCreds   : 'k8s-cred',
     k8sServer  : 'https://35.224.140.34'
